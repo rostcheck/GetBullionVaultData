@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.IO;
+using System.Security;
 using System.Xml;
 using System.Xml.XPath; 
 
@@ -11,26 +12,47 @@ namespace GetBullionVaultData
 	/// Proxy for web service operations to BullionVault's web API
 	/// </summary>
 	public class BullionVault
-	{
-		const string BaseURL = "http://live.bullionvault.com/";
+	{	
+		const string InsecureBaseURL = "http://live.bullionvault.com/";
+		const string SecureLoginBaseURL = "https://live.bullionvault.com/secure/";
+		const string SecureBaseURL = "https://live.bullionvault.com/secure/api/v2/";
+		private CookieContainer cookieContainer;
+		private bool isConnected = false;
 
 		public BullionVault()
 		{
+			cookieContainer = new CookieContainer();
 		}
 
-		public void Connect()
+		public void Connect(string userName, string password)
 		{
+			string URL = SecureLoginBaseURL + string.Format("j_security_check?j_username={0}&j_password={1}", userName,
+				             password);
+			CallAPI(URL); // Throws exception on auth error
+			//StreamReader reader = new StreamReader(loginResult);
+			//Console.WriteLine(reader.ReadToEnd());
+			isConnected = true;
+		}
+
+		public int NumberOfCookies 
+		{
+			get 
+			{
+				return cookieContainer.Count;
+			}
 		}
 
 		public bool IsConnected()
 		{
-			return false;
+			return isConnected;
 		}
 
 		public List<MarketPrice> MarketPrices()
 		{
 			List<MarketPrice> returnPrices = new List<MarketPrice>();
-			XPathDocument document = new XPathDocument(CallAPI("view_market_xml.do"));
+			const string urlPart = "view_market_xml.do";
+			string URL = isConnected ? SecureBaseURL + urlPart : InsecureBaseURL + urlPart ; 
+			XPathDocument document = new XPathDocument(CallAPI(URL));
 			XPathNavigator navigator = document.CreateNavigator();
 			XPathNodeIterator nodes = navigator.Select("/envelope/message/market/pitches/pitch");
 			while (nodes.MoveNext())
@@ -62,12 +84,12 @@ namespace GetBullionVaultData
 			return returnPrices;
 		}
 
-		private Stream CallAPI(string URLPart)
+		private Stream CallAPI(string URL)
 		{
-			string URL = string.Format("{0}/{1}", BaseURL, URLPart);
 			HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URL);
 			request.Method = "GET";
 			request.Accept = "gzip";
+			request.CookieContainer = cookieContainer;
 			HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
 			// Display the status.

@@ -2,11 +2,20 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="GetBullionVaultData/Program.cs">
     <Files>
-      <File FileName="GetBullionVaultData/Program.cs" Line="10" Column="1" />
+      <File FileName="GetBullionVaultData/Program.cs" Line="20" Column="64" />
+      <File FileName="GetBullionVaultData/BullionVault.cs" Line="13" Column="16" />
+      <File FileName="GetBullionVaultData/MarketPrice.cs" Line="16" Column="27" />
+      <File FileName="GetBullionVaultData/MetalTypeEnum.cs" Line="8" Column="9" />
+      <File FileName="GetBullionVaultData/VaultLocationEnum.cs" Line="8" Column="6" />
+      <File FileName="GetBullionVaultData/CurrencyTypeEnum.cs" Line="9" Column="6" />
+      <File FileName="GetBullionVaultData/Utils.cs" Line="74" Column="4" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/Users/davidr/Documents/Software Projects/Xamarin/GetBullionVaultData/GetBullionVaultData/BullionVault.cs" line="34" column="1" />
+      <Breakpoint file="/Users/davidr/Documents/Software Projects/Xamarin/GetBullionVaultData/GetBullionVaultData/Program.cs" line="15" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>
