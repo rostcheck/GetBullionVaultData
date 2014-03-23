@@ -40,6 +40,12 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BullionVault.cs" />
+    <Compile Include="MarketPrice.cs" />
+    <Compile Include="MetalTypeEnum.cs" />
+    <Compile Include="VaultLocationEnum.cs" />
+    <Compile Include="CurrencyTypeEnum.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
