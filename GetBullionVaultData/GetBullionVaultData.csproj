@@ -32,20 +32,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Web.Services" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="BullionVault.cs" />
-    <Compile Include="MarketPrice.cs" />
-    <Compile Include="MetalTypeEnum.cs" />
-    <Compile Include="VaultLocationEnum.cs" />
-    <Compile Include="CurrencyTypeEnum.cs" />
-    <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\BullionVaultProxy\BullionVaultProxy.csproj">
+      <Project>{11631D5A-9E00-4E79-9A59-77DCDFABCDA1}</Project>
+      <Name>BullionVaultProxy</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
