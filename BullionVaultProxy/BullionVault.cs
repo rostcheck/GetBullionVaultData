@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.IO;
 using System.Security;
+using System.Text;
 using System.Xml;
 using System.Xml.XPath; 
 
@@ -26,9 +27,9 @@ namespace BullionVaultProxy
 
 		public void Connect(string userName, string password)
 		{
-			string URL = SecureLoginBaseURL + string.Format("j_security_check?j_username={0}&j_password={1}", userName,
-				             password);
-			CallAPI(URL); // Throws exception on auth error
+			string URL = SecureLoginBaseURL + "j_security_check";
+			string postData = string.Format("j_username={0}&j_password={1}", userName, password);
+			CallAPI(URL, postData); // Throws exception on auth error
 			//StreamReader reader = new StreamReader(loginResult);
 			//Console.WriteLine(reader.ReadToEnd());
 			isConnected = true;
@@ -84,15 +85,49 @@ namespace BullionVaultProxy
 			return returnPrices;
 		}
 
-		private Stream CallAPI(string URL)
+		public void GetOrders(DateTime fromDate, DateTime toDate)
+		{
+			string URL = SecureBaseURL + "view_orders_xml.do";
+			Dictionary<string, string> postData = new Dictionary<string, string>();
+			postData.Add("fromDate", fromDate.ToString("yyyyMMdd"));
+			postData.Add("toDate", toDate.ToString("yyyyMMdd"));
+			Stream resultStream = CallAPI(URL, postData);
+			StreamReader reader = new StreamReader(resultStream);
+			Console.WriteLine(reader.ReadToEnd());
+		}
+
+		private Stream CallAPI(string URL, Dictionary<string, string> postValues)
+		{
+			StringBuilder sb = new StringBuilder();
+			foreach (string key in postValues.Keys)
+			{
+				if (sb.Length > 0)
+					sb.Append(@"&");
+				sb.AppendFormat("{0}={1}", key, postValues[key]);
+			}
+			return CallAPI(URL, sb.ToString());
+
+		}
+
+		private Stream CallAPI(string URL, string postData = "")
 		{
 			HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URL);
-			request.Method = "GET";
+			request.Method = (postData != null && postData.Length > 0) ? "POST" : "GET";
 			request.Accept = "gzip";
 			request.CookieContainer = cookieContainer;
-			HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-			// Display the status.
+			// Create POST data, convert it to a byte array, write it to the request stream
+			if ((postData != null && postData.Length > 0))
+			{
+				byte[] byteArray = Encoding.UTF8.GetBytes(postData);
+				request.ContentType = "application/x-www-form-urlencoded";
+				request.ContentLength = byteArray.Length;
+				Stream dataStream = request.GetRequestStream();
+				dataStream.Write(byteArray, 0, byteArray.Length);
+				dataStream.Close();
+			}
+
+			HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
 				throw new Exception("Returned status: " + response.StatusDescription);
