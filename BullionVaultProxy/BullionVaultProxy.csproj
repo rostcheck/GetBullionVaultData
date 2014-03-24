@@ -42,7 +42,12 @@
     <Compile Include="VaultLocationEnum.cs" />
     <Compile Include="Order.cs" />
     <Compile Include="ActionEnum.cs" />
-    <Compile Include="OrderStatusEnum.cs" />
+    <Compile Include="OrderStatusEnum.cs">
+      <DependentUpon>Order.cs</DependentUpon>
+    </Compile>
+    <Compile Include="OrderTypeEnum.cs" />
+    <Compile Include="TradeTypeEnum.cs" />
+    <Compile Include="OrderProcessingStatusEnum.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

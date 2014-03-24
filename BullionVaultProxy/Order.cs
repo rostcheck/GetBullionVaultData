@@ -4,8 +4,29 @@ namespace BullionVaultProxy
 {
 	public class Order
 	{
-		public Order()
+		public Order(string orderID, string clientTransactionReference, ActionEnum action, MetalTypeEnum metal,
+			CurrencyTypeEnum currency, decimal quantity, decimal quantityFilled, decimal totalConsideration,
+			decimal totalCommission, int limit, OrderTypeEnum orderType, DateTime orderDateTime, 
+			DateTime? goodUntil, DateTime lastModified, OrderProcessingStatusEnum processingStatus, 
+			TradeTypeEnum tradeType, decimal value)
 		{
+			OrderID = orderID;
+			ClientTransactionReference = clientTransactionReference;
+			Action = action;
+			Metal = metal;
+			Currency = currency;
+			Quantity = quantity;
+			QuantityFilled = quantityFilled;
+			TotalConsideration = totalConsideration;
+			TotalCommission = totalCommission;
+			Limit = limit;
+			OrderType = orderType;
+			OrderDateTime = orderDateTime;
+			GoodUntil = goodUntil;
+			LastModified = lastModified;
+			ProcessingStatus = processingStatus;
+			TradeType = tradeType;
+			Value = value;
 		}
 
 		public string OrderID { get; set; }
@@ -18,7 +39,13 @@ namespace BullionVaultProxy
 		public decimal TotalConsideration { get; set; }
 		public decimal TotalCommission { get; set; }
 		public int Limit { get; set; }
-
+		public OrderTypeEnum OrderType { get; set; }
+		public DateTime OrderDateTime { get; set; }
+		public DateTime? GoodUntil { get; set; }
+		public DateTime LastModified { get; set; }
+		public OrderProcessingStatusEnum ProcessingStatus { get; set; }
+		public TradeTypeEnum TradeType { get; set; }
+		public decimal Value { get; set; }
 	}
 }
 

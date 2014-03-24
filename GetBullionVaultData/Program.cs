@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security;
 using BullionVaultProxy;
@@ -21,7 +22,16 @@ namespace GetBullionVaultData
 //			Console.WriteLine("Cookies: " + vaultProxy.NumberOfCookies);
 
 			vaultProxy.Connect(GetString("User: "), GetString("Password: "));
-			vaultProxy.GetOrders(OrderStatusEnum.Closed, new DateTime(2006, 1, 1), new DateTime(2006, 12, 31));
+			List<Order> orderList = vaultProxy.GetOrders(OrderStatusEnum.Closed, new DateTime(2006, 1, 1), new DateTime(2006, 12, 31));
+			Console.WriteLine("Found " + orderList.Count + " orders (" + 
+				orderList.Where(s => s.ProcessingStatus == OrderProcessingStatusEnum.Cancelled).Count() +
+				" cancelled)");
+			foreach (Order order in orderList.Where(s => s.ProcessingStatus != OrderProcessingStatusEnum.Cancelled).ToList())
+			{
+				Console.WriteLine(string.Format("{0} {1} {2} {3} for {4} {5}", 
+					order.OrderID, order.Action, order.Quantity, order.Metal, order.Value,
+					order.Currency));
+			}
 		}
 
 		private static void ListPrices(BullionVault vaultProxy)

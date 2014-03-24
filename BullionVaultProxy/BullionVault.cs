@@ -63,7 +63,6 @@ namespace BullionVaultProxy
 				string vault = nodes.Current.GetAttribute("securityId", string.Empty);
 				string currency = nodes.Current.GetAttribute("considerationCurrency", string.Empty);
 				XPathNodeIterator priceNodes = nodes.Current.Select("*/price");
-				string innerXML = nodes.Current.InnerXml;
 				while (priceNodes.MoveNext())
 				{
 					if (priceNodes.Current.GetAttribute("actionIndicator", string.Empty) == "B")
@@ -86,11 +85,17 @@ namespace BullionVaultProxy
 		}
 
 		// Note: BullionVault strongly recommends restricting order type to only Open for bots
-		public void GetOrders(OrderStatusEnum orderStatus, DateTime fromDate, DateTime toDate)
+		public List<Order> GetOrders(OrderStatusEnum orderStatus, DateTime fromDate, DateTime toDate)
 		{
-			while (true)
+			if (!isConnected)
+				throw new Exception("Not connected");
+
+			List<Order> returnOrders = new List<Order>();
+			int pageNumber = 0;
+			int ordersFound = 0;
+			int pageSize = 20; // default
+			do
 			{
-				int pageNumber = 0;
 				string URL = SecureBaseURL + "view_orders_xml.do";
 				Dictionary<string, string> postData = new Dictionary<string, string>();
 				postData.Add("status", Utils.GetOrderStatus(orderStatus));
@@ -101,14 +106,48 @@ namespace BullionVaultProxy
 				XPathDocument document = new XPathDocument(CallAPI(URL, postData));
 				XPathNavigator navigator = document.CreateNavigator();
 				XPathNodeIterator nodes = navigator.Select("/envelope/message");
-				int pageSize = Convert.ToInt32(nodes.Current.GetAttribute("pageSize", string.Empty));
-				int thisPageNumber = Convert.ToInt32(nodes.Current.GetAttribute("pageSize", string.Empty));
+				nodes.MoveNext();
+				if (nodes.Current == null)
+					throw new Exception("Could not find message in XML return");
+
+			 	pageSize = Convert.ToInt32(nodes.Current.GetAttribute("pageSize", string.Empty));
 				nodes = navigator.Select("/envelope/message/orders/order");
+
 				while (nodes.MoveNext())
 				{
-
+					string orderID = nodes.Current.GetAttribute("orderId", "");
+					string clientTransactionReference = nodes.Current.GetAttribute("clientTransRef", "");
+					ActionEnum action = Utils.GetAction(nodes.Current.GetAttribute("actionIndicator", ""));
+					MetalTypeEnum metalType = Utils.GetMetalTypeFromSymbol(
+						nodes.Current.GetAttribute("securityId", ""));
+					CurrencyTypeEnum currencyType = Utils.GetCurrencyType(
+						nodes.Current.GetAttribute("considerationCurrency", ""));
+					decimal quantity = Convert.ToDecimal(nodes.Current.GetAttribute("quantity", ""));
+					decimal quantityFilled = Convert.ToDecimal(nodes.Current.GetAttribute("quantityMatched", ""));
+					decimal totalConsideration = Convert.ToDecimal(
+						nodes.Current.GetAttribute("totalConsideration", ""));
+					decimal totalCommission = Convert.ToDecimal(nodes.Current.GetAttribute("totalCommission", ""));
+					int limit = Convert.ToInt32(nodes.Current.GetAttribute("limit", ""));
+					OrderTypeEnum orderType = Utils.GetOrderType(nodes.Current.GetAttribute("typeCode", ""));
+					DateTime orderTime = Utils.ParseBullionVaultDate(nodes.Current.GetAttribute("orderTime" ,""));
+					string tempGoodUntil = nodes.Current.GetAttribute("goodUntil", "");
+					DateTime? goodUntil = (tempGoodUntil == "") ? null : 
+						new DateTime?(Utils.ParseBullionVaultDate(tempGoodUntil));
+					DateTime lastModified = Utils.ParseBullionVaultDate(nodes.Current.GetAttribute("lastModified", ""));
+					OrderProcessingStatusEnum orderProcessingStatus = Utils.GetOrderProcessingStatus(
+						nodes.Current.GetAttribute("statusCode", ""));
+					TradeTypeEnum tradeType = Utils.GetTradeType(nodes.Current.GetAttribute("tradeType", ""));
+					decimal orderValue = Convert.ToDecimal(nodes.Current.GetAttribute("orderValue", ""));
+					Order order = new Order(orderID, clientTransactionReference, action, metalType, 
+						              currencyType, quantity, quantityFilled, totalConsideration, totalCommission,
+						              limit, orderType, orderTime, goodUntil, lastModified, orderProcessingStatus, 
+						              tradeType, orderValue);
+					returnOrders.Add(order);
+					ordersFound++;
 				}
-			}
+				pageNumber++;
+			} while (ordersFound == pageSize);
+			return returnOrders;
 //			Stream resultStream = CallAPI(URL, postData);
 //			StreamReader reader = new StreamReader(resultStream);
 //			Console.WriteLine(reader.ReadToEnd());
