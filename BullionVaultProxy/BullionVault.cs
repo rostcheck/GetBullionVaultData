@@ -85,15 +85,33 @@ namespace BullionVaultProxy
 			return returnPrices;
 		}
 
-		public void GetOrders(DateTime fromDate, DateTime toDate)
+		// Note: BullionVault strongly recommends restricting order type to only Open for bots
+		public void GetOrders(OrderStatusEnum orderStatus, DateTime fromDate, DateTime toDate)
 		{
-			string URL = SecureBaseURL + "view_orders_xml.do";
-			Dictionary<string, string> postData = new Dictionary<string, string>();
-			postData.Add("fromDate", fromDate.ToString("yyyyMMdd"));
-			postData.Add("toDate", toDate.ToString("yyyyMMdd"));
-			Stream resultStream = CallAPI(URL, postData);
-			StreamReader reader = new StreamReader(resultStream);
-			Console.WriteLine(reader.ReadToEnd());
+			while (true)
+			{
+				int pageNumber = 0;
+				string URL = SecureBaseURL + "view_orders_xml.do";
+				Dictionary<string, string> postData = new Dictionary<string, string>();
+				postData.Add("status", Utils.GetOrderStatus(orderStatus));
+				postData.Add("fromDate", fromDate.ToString("yyyyMMdd"));
+				postData.Add("toDate", toDate.ToString("yyyyMMdd"));
+				postData.Add("page", pageNumber.ToString());
+
+				XPathDocument document = new XPathDocument(CallAPI(URL, postData));
+				XPathNavigator navigator = document.CreateNavigator();
+				XPathNodeIterator nodes = navigator.Select("/envelope/message");
+				int pageSize = Convert.ToInt32(nodes.Current.GetAttribute("pageSize", string.Empty));
+				int thisPageNumber = Convert.ToInt32(nodes.Current.GetAttribute("pageSize", string.Empty));
+				nodes = navigator.Select("/envelope/message/orders/order");
+				while (nodes.MoveNext())
+				{
+
+				}
+			}
+//			Stream resultStream = CallAPI(URL, postData);
+//			StreamReader reader = new StreamReader(resultStream);
+//			Console.WriteLine(reader.ReadToEnd());
 		}
 
 		private Stream CallAPI(string URL, Dictionary<string, string> postValues)

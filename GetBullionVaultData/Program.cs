@@ -21,7 +21,7 @@ namespace GetBullionVaultData
 //			Console.WriteLine("Cookies: " + vaultProxy.NumberOfCookies);
 
 			vaultProxy.Connect(GetString("User: "), GetString("Password: "));
-			vaultProxy.GetOrders(new DateTime(2006, 1, 1), new DateTime(2006, 12, 31));
+			vaultProxy.GetOrders(OrderStatusEnum.Closed, new DateTime(2006, 1, 1), new DateTime(2006, 12, 31));
 		}
 
 		private static void ListPrices(BullionVault vaultProxy)

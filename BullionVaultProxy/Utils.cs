@@ -72,6 +72,25 @@ namespace BullionVaultProxy
 					return "Unknown";
 			}
 		}
+
+		public static string GetOrderStatus(OrderStatusEnum orderStatus)
+		{
+			switch (orderStatus)
+			{
+				case OrderStatusEnum.Closed:
+					return "CLOSED";
+				case OrderStatusEnum.Dealt:
+					return "DEALT";
+				case OrderStatusEnum.OpenOrDealt:
+					return "OPEN_DEALT";
+				case OrderStatusEnum.Rejected:
+					return "REJECTED";
+				case OrderStatusEnum.Open:
+					return "OPEN";
+				default:
+					return "Unknown";
+			}
+		}
 	}
 }
 

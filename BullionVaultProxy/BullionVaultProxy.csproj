@@ -40,6 +40,9 @@
     <Compile Include="MetalTypeEnum.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VaultLocationEnum.cs" />
+    <Compile Include="Order.cs" />
+    <Compile Include="ActionEnum.cs" />
+    <Compile Include="OrderStatusEnum.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
