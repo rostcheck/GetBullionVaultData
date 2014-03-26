@@ -10,7 +10,7 @@ namespace BullionVaultProxy
 		{
 			StreamWriter writer = new StreamWriter(fileName);
 			writer.WriteLine("OrderDateTime\tOrderID\tAction\tVault\tValue\tClientTransRef\tCurrency\t"
-				+ "Metal\tGoodTil\tLastModified\tLimit\tOrderType\tStatus\tQuantity\tQtyFilled\tCommission\t"
+				+ "Metal\tGoodTil\tLastModified\tPricePerKg\tOrderType\tStatus\tQuantity\tQtyFilled\tCommission\t"
 				+ "Consideration\tTradeType");
 				
 			foreach (Order order in orderList)
