@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
+using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Security;
 using System.Text;
 using System.Xml;
@@ -30,8 +31,16 @@ namespace BullionVaultProxy
 			string URL = SecureLoginBaseURL + "j_security_check";
 			string postData = string.Format("j_username={0}&j_password={1}", userName, password);
 			CallAPI(URL, postData); // Throws exception on auth error
-			//StreamReader reader = new StreamReader(loginResult);
-			//Console.WriteLine(reader.ReadToEnd());
+			isConnected = true;
+		}
+
+		// Use NetworkCredential, exposes the username and password less in the swap file
+		public void Connect(NetworkCredential credential)
+		{
+			string URL = SecureLoginBaseURL + "j_security_check";
+			// Throws exception on auth error
+			CallAPI(URL, string.Format("j_username={0}&j_password={1}", credential.UserName, credential.Password)); 
+
 			isConnected = true;
 		}
 
@@ -91,66 +100,83 @@ namespace BullionVaultProxy
 				throw new Exception("Not connected");
 
 			List<Order> returnOrders = new List<Order>();
-			int pageNumber = 0;
-			int ordersFound = 0;
-			int pageSize = 20; // default
-			do
-			{
-				string URL = SecureBaseURL + "view_orders_xml.do";
-				Dictionary<string, string> postData = new Dictionary<string, string>();
-				postData.Add("status", Utils.GetOrderStatus(orderStatus));
-				postData.Add("fromDate", fromDate.ToString("yyyyMMdd"));
-				postData.Add("toDate", toDate.ToString("yyyyMMdd"));
-				postData.Add("page", pageNumber.ToString());
-
-				XPathDocument document = new XPathDocument(CallAPI(URL, postData));
-				XPathNavigator navigator = document.CreateNavigator();
-				XPathNodeIterator nodes = navigator.Select("/envelope/message");
-				nodes.MoveNext();
-				if (nodes.Current == null)
-					throw new Exception("Could not find message in XML return");
-
-			 	pageSize = Convert.ToInt32(nodes.Current.GetAttribute("pageSize", string.Empty));
-				nodes = navigator.Select("/envelope/message/orders/order");
-
-				while (nodes.MoveNext())
+			TimeSpan oneYear = new TimeSpan(365, 0, 0, 0);
+			DateTime currentToDate = fromDate;
+			DateTime currentFromDate = fromDate;
+			do {
+				// Query 1 year at a time (max. allowed by BullionVault)
+				currentToDate = (toDate - currentToDate > oneYear) ? currentToDate + oneYear : toDate;
+				int pageNumber = 0;
+				int ordersFound = 0;
+				int pageSize = 20; // default
+				do
 				{
-					string orderID = nodes.Current.GetAttribute("orderId", "");
-					string clientTransactionReference = nodes.Current.GetAttribute("clientTransRef", "");
-					ActionEnum action = Utils.GetAction(nodes.Current.GetAttribute("actionIndicator", ""));
-					MetalTypeEnum metalType = Utils.GetMetalTypeFromSymbol(
-						nodes.Current.GetAttribute("securityId", ""));
-					CurrencyTypeEnum currencyType = Utils.GetCurrencyType(
-						nodes.Current.GetAttribute("considerationCurrency", ""));
-					decimal quantity = Convert.ToDecimal(nodes.Current.GetAttribute("quantity", ""));
-					decimal quantityFilled = Convert.ToDecimal(nodes.Current.GetAttribute("quantityMatched", ""));
-					decimal totalConsideration = Convert.ToDecimal(
-						nodes.Current.GetAttribute("totalConsideration", ""));
-					decimal totalCommission = Convert.ToDecimal(nodes.Current.GetAttribute("totalCommission", ""));
-					int limit = Convert.ToInt32(nodes.Current.GetAttribute("limit", ""));
-					OrderTypeEnum orderType = Utils.GetOrderType(nodes.Current.GetAttribute("typeCode", ""));
-					DateTime orderTime = Utils.ParseBullionVaultDate(nodes.Current.GetAttribute("orderTime" ,""));
-					string tempGoodUntil = nodes.Current.GetAttribute("goodUntil", "");
-					DateTime? goodUntil = (tempGoodUntil == "") ? null : 
-						new DateTime?(Utils.ParseBullionVaultDate(tempGoodUntil));
-					DateTime lastModified = Utils.ParseBullionVaultDate(nodes.Current.GetAttribute("lastModified", ""));
-					OrderProcessingStatusEnum orderProcessingStatus = Utils.GetOrderProcessingStatus(
-						nodes.Current.GetAttribute("statusCode", ""));
-					TradeTypeEnum tradeType = Utils.GetTradeType(nodes.Current.GetAttribute("tradeType", ""));
-					decimal orderValue = Convert.ToDecimal(nodes.Current.GetAttribute("orderValue", ""));
-					Order order = new Order(orderID, clientTransactionReference, action, metalType, 
-						              currencyType, quantity, quantityFilled, totalConsideration, totalCommission,
-						              limit, orderType, orderTime, goodUntil, lastModified, orderProcessingStatus, 
-						              tradeType, orderValue);
-					returnOrders.Add(order);
-					ordersFound++;
-				}
-				pageNumber++;
-			} while (ordersFound == pageSize);
+					string URL = SecureBaseURL + "view_orders_xml.do";
+					Dictionary<string, string> postData = new Dictionary<string, string>();
+					postData.Add("status", Utils.GetOrderStatus(orderStatus));
+					postData.Add("fromDate", currentFromDate.ToString("yyyyMMdd"));
+					postData.Add("toDate", currentToDate.ToString("yyyyMMdd"));
+					postData.Add("page", pageNumber.ToString());
+
+					XPathDocument document = new XPathDocument(CallAPI(URL, postData));
+					XPathNavigator navigator = document.CreateNavigator();
+					XPathNodeIterator nodes = navigator.Select("/envelope/message");
+					nodes.MoveNext();
+					if (nodes.Current == null)
+						throw new Exception("Could not find message in XML return");
+
+				 	pageSize = Convert.ToInt32(nodes.Current.GetAttribute("pageSize", string.Empty));
+					nodes = navigator.Select("/envelope/message/orders/order");
+
+					while (nodes.MoveNext())
+					{
+						returnOrders.Add(ParseOrder(nodes.Current));
+						ordersFound++;
+					}
+					pageNumber++;
+				} while (ordersFound == pageSize); // Visit all response pages
+				currentFromDate += oneYear;
+			} while (currentToDate < toDate);
 			return returnOrders;
-//			Stream resultStream = CallAPI(URL, postData);
-//			StreamReader reader = new StreamReader(resultStream);
-//			Console.WriteLine(reader.ReadToEnd());
+		}
+
+		// For testing - use like: PrintResponse(CallAPI(URL, postData));
+		private void PrintResponse(Stream resultStream)
+		{
+			StreamReader reader = new StreamReader(resultStream);
+			Console.WriteLine(reader.ReadToEnd());
+		}
+
+		private Order ParseOrder(XPathNavigator node)
+		{
+			UInt64 orderID = Convert.ToUInt64(node.GetAttribute("orderId", ""));
+			string clientTransactionReference = node.GetAttribute("clientTransRef", "");
+			ActionEnum action = Utils.GetAction(node.GetAttribute("actionIndicator", ""));
+			string symbol = node.GetAttribute("securityId", "");
+			MetalTypeEnum metalType = Utils.GetMetalTypeFromSymbol(symbol);
+			VaultLocationEnum vault = Utils.GetVaultLocation(symbol);
+			CurrencyTypeEnum currencyType = Utils.GetCurrencyType(
+				node.GetAttribute("considerationCurrency", ""));
+			decimal quantity = Decimal.Parse(node.GetAttribute("quantity", ""), NumberStyles.Any);
+			decimal quantityFilled = Convert.ToDecimal(node.GetAttribute("quantityMatched", ""));
+			decimal totalConsideration = Convert.ToDecimal(
+				node.GetAttribute("totalConsideration", ""));
+			decimal totalCommission = Convert.ToDecimal(node.GetAttribute("totalCommission", ""));
+			int limit = Convert.ToInt32(node.GetAttribute("limit", ""));
+			OrderTypeEnum orderType = Utils.GetOrderType(node.GetAttribute("typeCode", ""));
+			DateTime orderTime = Utils.ParseBullionVaultDate(node.GetAttribute("orderTime" ,""));
+			string tempGoodUntil = node.GetAttribute("goodUntil", "");
+			DateTime? goodUntil = (tempGoodUntil == "") ? null : 
+				new DateTime?(Utils.ParseBullionVaultDate(tempGoodUntil));
+			DateTime lastModified = Utils.ParseBullionVaultDate(node.GetAttribute("lastModified", ""));
+			OrderProcessingStatusEnum orderProcessingStatus = Utils.GetOrderProcessingStatus(
+				node.GetAttribute("statusCode", ""));
+			TradeTypeEnum tradeType = Utils.GetTradeType(node.GetAttribute("tradeType", ""));
+			decimal orderValue = Convert.ToDecimal(node.GetAttribute("orderValue", ""));
+			return new Order(orderID, clientTransactionReference, action, metalType, 
+				currencyType, quantity, quantityFilled, totalConsideration, totalCommission,
+				limit, orderType, orderTime, goodUntil, lastModified, orderProcessingStatus, 
+				tradeType, orderValue, vault);
 		}
 
 		private Stream CallAPI(string URL, Dictionary<string, string> postValues)

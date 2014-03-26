@@ -48,6 +48,7 @@
     <Compile Include="OrderTypeEnum.cs" />
     <Compile Include="TradeTypeEnum.cs" />
     <Compile Include="OrderProcessingStatusEnum.cs" />
+    <Compile Include="FileSerializer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

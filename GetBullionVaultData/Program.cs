@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security;
 using BullionVaultProxy;
 
@@ -11,27 +12,25 @@ namespace GetBullionVaultData
 		public static void Main(string[] args)
 		{
 			BullionVault vaultProxy = new BullionVault();
-			//			SecureString secureUser = GetSecureString("User: ");
-			//SecureString securePwd = GetSecureString("Password: ");
-
-//			ListPrices(vaultProxy);
-//			Console.WriteLine("Cookies: " + vaultProxy.NumberOfCookies);
-//			vaultProxy.Connect(GetString("User: "), GetString("Password: "));
-//			Console.WriteLine("Cookies: " + vaultProxy.NumberOfCookies);
-//			ListPrices(vaultProxy);
-//			Console.WriteLine("Cookies: " + vaultProxy.NumberOfCookies);
-
+			// This doesn't work on Xamarin Mac - NetworkCredential.Password doesn't expose the decrypted password
+//			NetworkCredential credential = new NetworkCredential();
+//			credential.UserName = GetString("User: ");
+//			credential.SecurePassword = GetSecureString("Password: ");
 			vaultProxy.Connect(GetString("User: "), GetString("Password: "));
-			List<Order> orderList = vaultProxy.GetOrders(OrderStatusEnum.Closed, new DateTime(2006, 1, 1), new DateTime(2006, 12, 31));
-			Console.WriteLine("Found " + orderList.Count + " orders (" + 
-				orderList.Where(s => s.ProcessingStatus == OrderProcessingStatusEnum.Cancelled).Count() +
-				" cancelled)");
-			foreach (Order order in orderList.Where(s => s.ProcessingStatus != OrderProcessingStatusEnum.Cancelled).ToList())
+			//vaultProxy.Connect(credential);
+			List<Order> orderList = vaultProxy.GetOrders(OrderStatusEnum.Closed, new DateTime(2006, 1, 1), new DateTime(2013, 12, 31));
+			List<Order> successfulOrders = orderList.Where(s => s.ProcessingStatus == OrderProcessingStatusEnum.Done)
+				.OrderBy(s => s.OrderID).ToList();
+			List<Order> cancelledOrders = orderList.Where(s => s.ProcessingStatus == OrderProcessingStatusEnum.Cancelled)
+				.OrderBy(s => s.OrderID).ToList();
+			Console.WriteLine("Found " + orderList.Count + " orders (" + cancelledOrders.Count() + " cancelled)");
+			foreach (Order order in successfulOrders)
 			{
-				Console.WriteLine(string.Format("{0} {1} {2} {3} for {4} {5}", 
-					order.OrderID, order.Action, order.Quantity, order.Metal, order.Value,
+				Console.WriteLine(string.Format("{0} {1} {2} {3} {4} for {5} {6}", 
+					order.OrderID, order.OrderDateTime, order.Action, order.Quantity, order.Metal, order.Value,
 					order.Currency));
 			}
+			FileSerializer.Save(successfulOrders, "BullionVault.txt");
 		}
 
 		private static void ListPrices(BullionVault vaultProxy)
@@ -55,7 +54,6 @@ namespace GetBullionVaultData
 				result += key.KeyChar;
 				key = Console.ReadKey();
 			}
-			Console.WriteLine();
 			return result;
 		}
 
@@ -69,7 +67,6 @@ namespace GetBullionVaultData
 				result.AppendChar(key.KeyChar);
 				key = Console.ReadKey();
 			}
-			Console.WriteLine();
 			return result;
 		}
 	}
