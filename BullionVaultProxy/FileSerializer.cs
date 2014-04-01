@@ -8,7 +8,7 @@ namespace BullionVaultProxy
 	{
 		public static void Save(List<Order> orderList, string fileName)
 		{
-			StreamWriter writer = new StreamWriter(fileName);
+			StreamWriter writer = new StreamWriter(fileName, false); 
 			writer.WriteLine("OrderDateTime\tOrderID\tAction\tVault\tValue\tClientTransRef\tCurrency\t"
 				+ "Metal\tGoodTil\tLastModified\tPricePerKg\tOrderType\tStatus\tQuantity\tQtyFilled\tCommission\t"
 				+ "Consideration\tTradeType");

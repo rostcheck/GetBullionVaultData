@@ -103,14 +103,16 @@ namespace BullionVaultProxy
 			TimeSpan oneYear = new TimeSpan(365, 0, 0, 0);
 			DateTime currentToDate = fromDate;
 			DateTime currentFromDate = fromDate;
+			int totalOrdersFound = 0;
 			do {
 				// Query 1 year at a time (max. allowed by BullionVault)
 				currentToDate = (toDate - currentToDate > oneYear) ? currentToDate + oneYear : toDate;
 				int pageNumber = 0;
-				int ordersFound = 0;
 				int pageSize = 20; // default
+				int ordersFound;
 				do
 				{
+					ordersFound = 0;
 					string URL = SecureBaseURL + "view_orders_xml.do";
 					Dictionary<string, string> postData = new Dictionary<string, string>();
 					postData.Add("status", Utils.GetOrderStatus(orderStatus));
@@ -133,6 +135,7 @@ namespace BullionVaultProxy
 						returnOrders.Add(ParseOrder(nodes.Current));
 						ordersFound++;
 					}
+					totalOrdersFound += ordersFound;
 					pageNumber++;
 				} while (ordersFound == pageSize); // Visit all response pages
 				currentFromDate += oneYear;

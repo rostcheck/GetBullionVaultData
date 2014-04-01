@@ -1,20 +1,20 @@
 ﻿<Properties GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workbench ActiveDocument="BullionVaultProxy/BullionVault.cs">
     <Files>
-      <File FileName="GetBullionVaultData/Program.cs" Line="25" Column="39" />
-      <File FileName="BullionVaultProxy/BullionVault.cs" Line="152" Column="71" />
-      <File FileName="BullionVaultProxy/CurrencyTypeEnum.cs" Line="3" Column="28" />
-      <File FileName="BullionVaultProxy/MarketPrice.cs" Line="3" Column="28" />
-      <File FileName="BullionVaultProxy/MetalTypeEnum.cs" Line="3" Column="28" />
-      <File FileName="BullionVaultProxy/Utils.cs" Line="37" Column="21" />
-      <File FileName="BullionVaultProxy/VaultLocationEnum.cs" Line="3" Column="28" />
-      <File FileName="BullionVaultProxy/OrderStatusEnum.cs" Line="5" Column="19" />
-      <File FileName="BullionVaultProxy/Order.cs" Line="28" Column="25" />
-      <File FileName="BullionVaultProxy/ActionEnum.cs" Line="8" Column="7" />
-      <File FileName="BullionVaultProxy/OrderTypeEnum.cs" Line="7" Column="22" />
-      <File FileName="BullionVaultProxy/FileSerializer.cs" Line="13" Column="48" />
-      <File FileName="BullionVaultProxy/OrderProcessingStatusEnum.cs" Line="8" Column="12" />
+      <File FileName="GetBullionVaultData/Program.cs" Line="21" Column="90" />
+      <File FileName="BullionVaultProxy/BullionVault.cs" Line="139" Column="1" />
+      <File FileName="BullionVaultProxy/CurrencyTypeEnum.cs" Line="1" Column="1" />
+      <File FileName="BullionVaultProxy/MarketPrice.cs" Line="1" Column="1" />
+      <File FileName="BullionVaultProxy/MetalTypeEnum.cs" Line="1" Column="1" />
+      <File FileName="BullionVaultProxy/Utils.cs" Line="1" Column="1" />
+      <File FileName="BullionVaultProxy/VaultLocationEnum.cs" Line="1" Column="1" />
+      <File FileName="BullionVaultProxy/OrderStatusEnum.cs" Line="1" Column="1" />
+      <File FileName="BullionVaultProxy/Order.cs" Line="1" Column="1" />
+      <File FileName="BullionVaultProxy/ActionEnum.cs" Line="1" Column="1" />
+      <File FileName="BullionVaultProxy/OrderTypeEnum.cs" Line="1" Column="1" />
+      <File FileName="BullionVaultProxy/FileSerializer.cs" Line="11" Column="61" />
+      <File FileName="BullionVaultProxy/OrderProcessingStatusEnum.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
