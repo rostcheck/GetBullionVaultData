@@ -18,7 +18,7 @@ namespace GetBullionVaultData
 //			credential.SecurePassword = GetSecureString("Password: ");
 			vaultProxy.Connect(GetString("User: "), GetString("Password: "));
 			//vaultProxy.Connect(credential);
-			List<Order> orderList = vaultProxy.GetOrders(OrderStatusEnum.Closed, new DateTime(2006, 1, 1), new DateTime(2013, 12, 31));
+			List<Order> orderList = vaultProxy.GetOrders(OrderStatusEnum.Closed, new DateTime(2006, 1, 1), DateTime.Now);
 			List<Order> successfulOrders = orderList.Where(s => s.ProcessingStatus == OrderProcessingStatusEnum.Done)
 				.OrderBy(s => s.OrderID).ToList();
 			List<Order> cancelledOrders = orderList.Where(s => s.ProcessingStatus == OrderProcessingStatusEnum.Cancelled)

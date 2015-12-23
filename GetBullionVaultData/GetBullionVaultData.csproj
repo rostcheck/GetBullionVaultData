@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{F42BDDC5-4714-4300-97CD-21D532A5936F}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -43,5 +43,8 @@
       <Project>{11631D5A-9E00-4E79-9A59-77DCDFABCDA1}</Project>
       <Name>BullionVaultProxy</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.txt" />
   </ItemGroup>
 </Project>
